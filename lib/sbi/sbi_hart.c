@@ -360,7 +360,7 @@ static unsigned long coldboot_wait_bitmap = 0;
 
 void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
-	unsigned long saved_mie;
+	unsigned long saved_mie, cmip;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
@@ -379,14 +379,21 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Mark current HART as waiting */
 	coldboot_wait_bitmap |= (1UL << hartid);
 
-	/* Wait for coldboot to finish using WFI */
-	while (!coldboot_done) {
-		spin_unlock(&coldboot_lock);
-		wfi();
-		spin_lock(&coldboot_lock);
-	};
+    /* Release coldboot lock */
+    spin_unlock(&coldboot_lock);
 
-	/* Unmark current HART as waiting */
+    /* Wait for coldboot to finish using WFI */
+    while (!__smp_load_acquire(&coldboot_done)) {
+        do {
+            wfi();
+            cmip = csr_read(CSR_MIP);
+         } while (!(cmip & MIP_MSIP));
+    };
+
+    /* Acquire coldboot lock */
+    spin_lock(&coldboot_lock);
+
+    /* Unmark current HART as waiting */
 	coldboot_wait_bitmap &= ~(1UL << hartid);
 
 	/* Release coldboot lock */
