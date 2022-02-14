@@ -18,7 +18,7 @@
 #include <sbi/riscv_io.h>
 
 #define ESP_UART_ADDR			0x60000100
-#define ESP_BASE_FREQ			78000000
+#define ESP_BASE_FREQ			(BASE_FREQ_MHZ * 1000000)
 #define ESP_UART_BAUDRATE			38400
 #define ESP_UART_REG_SHIFT			2
 #define ESP_UART_REG_WIDTH			4

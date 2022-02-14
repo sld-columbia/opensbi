@@ -6,3 +6,4 @@
 #
 
 platform-objs-y += platform.o
+platform-genflags-y += -DBASE_FREQ_MHZ=$(BASE_FREQ)
