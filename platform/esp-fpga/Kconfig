@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+config PLATFORM_ESP_FPGA
+	bool
+	select FDT
+	select IPI_MSWI
+	select IRQCHIP_PLIC
+	select SERIAL_GAISLER
+	select TIMER_MTIMER
+	default y
